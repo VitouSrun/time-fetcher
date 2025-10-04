@@ -20,7 +20,7 @@
       <input type="url" id="urlInput" placeholder="Enter JSON URL" />
       <button id="fetchBtn">Fetch</button>
     </div>
-    <p id="dateInfo"></p>
+    <p id="dateInfo">Welcome</p>
     <pre id="output"></pre>
   </div>
 
@@ -57,6 +57,7 @@
     async function fetchJson(url) {
       try {
         output.textContent = "Loading...";
+        await new Promise(resolve => setTimeout(resolve, 1000));
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
@@ -71,7 +72,7 @@
         }
       } catch (err) {
         output.textContent = "Error: " + err.message;
-        dateInfo.textContent = "";
+        dateInfo.textContent = "No data available";
       }
     }
 
