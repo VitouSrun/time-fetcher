@@ -73,7 +73,7 @@
         // Show only latest feed time
         if (data.feeds?.length > 0 && data.feeds[0].created_at) {
           const rawDate = data.feeds[0].created_at;
-          dateInfo.textContent = `${formatDate(rawDate)} (${timeAgo(rawDate)})`;
+          dateInfo.innerHTML = `${formatDate(rawDate)}<br>(${timeAgo(rawDate)})`;
         } else {
           dateInfo.textContent = "";
         }

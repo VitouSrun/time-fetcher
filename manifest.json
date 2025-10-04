@@ -1,6 +1,6 @@
 {
-  "name": "JSON Fetcher",
-  "short_name": "JSONFetcher",
+  "name": "Time Fetcher",
+  "short_name": "TimeFetcher",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f4f6f9",
