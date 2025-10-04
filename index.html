@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Time Fetcher</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Time Fetcher">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1>Time Fetcher</h1>
+    <div class="input-group">
+      <input type="url" id="urlInput" placeholder="Enter JSON URL" />
+      <button id="fetchBtn">Fetch</button>
+    </div>
+    <p id="dateInfo"></p>
+    <pre id="output"></pre>
+  </div>
+
+  <script>
+    const urlInput = document.getElementById("urlInput");
+    const output = document.getElementById("output");
+    const dateInfo = document.getElementById("dateInfo");
+    const STORAGE_KEY = "lastJsonUrl";
+
+    function formatDate(dateStr) {
+      try {
+        const d = new Date(dateStr);
+        return isNaN(d) ? dateStr : d.toLocaleString();
+      } catch {
+        return dateStr;
+      }
+    }
+
+    function timeAgo(dateStr) {
+      const now = new Date();
+      const past = new Date(dateStr);
+      if (isNaN(past)) return "";
+      const seconds = Math.floor((now - past) / 1000);
+
+      if (seconds < 60) return `${seconds}s ago`;
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      return `${days}d ago`;
+    }
+
+    async function fetchJson(url) {
+      try {
+        output.textContent = "Loading...";
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        output.textContent = JSON.stringify(data, null, 2);
+
+        // Show only latest feed time
+        if (data.feeds?.length > 0 && data.feeds[0].created_at) {
+          const rawDate = data.feeds[0].created_at;
+          dateInfo.textContent = `${formatDate(rawDate)} (${timeAgo(rawDate)})`;
+        } else {
+          dateInfo.textContent = "";
+        }
+      } catch (err) {
+        output.textContent = "Error: " + err.message;
+        dateInfo.textContent = "";
+      }
+    }
+
+    // On button click → fetch + remember URL
+    document.getElementById("fetchBtn").addEventListener("click", () => {
+      const url = urlInput.value.trim();
+      if (!url) return;
+      localStorage.setItem(STORAGE_KEY, url);
+      fetchJson(url);
+    });
+
+    // On page load → auto fetch if saved URL exists
+    const savedUrl = localStorage.getItem(STORAGE_KEY);
+    if (savedUrl) {
+      urlInput.value = savedUrl;
+      fetchJson(savedUrl);
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('Service Worker registered'))
+        .catch(err => console.log('Service Worker registration failed:', err));
+    }
+  </script>
+</body>
+
+</html>
